@@ -2,8 +2,8 @@
 # Must be the same as `author` in `_config.yml`.
 # Change `author1` to your shortname.
 author1:
-  name:              <JongHyeon> <Won>
-  email:             <weon1009@gmail.com>
+  name:              JongHyeon Won
+  email:             weon1009@gmail.com
 
   # Used at the bottom of each page and at the top of the `about` layout
   # Markdown enabled, can use multiple paragraphs (enabled by `|`)
@@ -24,8 +24,8 @@ author1:
   # Rearrange to change the order in which they appear
   social:
     #twitter:         <username>
-    github:          <www-jong>
-    email:           <weon1009@gmail.com>
+    github:          www-jong
+    email:           weon1009@gmail.com
     # rss:             https://<url>/feed.xml
     # facebook:        <username>
     # google:          <number>

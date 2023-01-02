@@ -6,7 +6,7 @@ An incomplete list of features included in all versions of **Hydejack**:
 * Single Page Web App-style page loading
 * Advanced FLIP animations, inspired by Material Design
 * Good [Google PageSpeed Score][gpss][^11]
-* [Syntax highlighting][syntax], powered by [Rouge]
+* [Syntax highlighting][syntax], powered by [www-jong]
 * [LaTeX math blocks][latex], rendered with ether [KaTeX] or [MathJax] at your choice
 * Soft-coded labels: Change wording or translate to other languages via a single file
 * Support for categories and tags

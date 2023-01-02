@@ -19,6 +19,7 @@
 # You may also provide a location, e.g.: en-us, de_AT.
 lang:                  en
 
+
 # The title of your blog. Used in the sidebar and the browser tab.
 title:                 Starter Kit
 
@@ -81,7 +82,7 @@ paginate_path:         /:num/
 # ---------------------------------------------------------------------------------------
 
 #theme: jekyll-theme-hydejack
- remote_theme: hydecorp/hydejack@v9
+remote_theme: hydecorp/hydejack@v9
 
 
 # Customizaton

@@ -51,8 +51,10 @@ author:
 menu:
   - title:             About
     url:               /about/
-  - title:             Example
-    url:               /example/
+  - title:             Baekjun
+    url:               /baekjun/
+  - title:             Swea
+    url:               /swea/
   - title:             Documentation
     url:               /docs/
 

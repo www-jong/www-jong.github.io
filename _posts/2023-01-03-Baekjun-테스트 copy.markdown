@@ -2,7 +2,7 @@
 layout: post
 title:  "테스트"
 date:   2022-01-03 18:24:24 +0900
-categories: bAekjun
+categories: baekjun
 ---
 
 [jekyll-docs]: https://jekyllrb.com/docs/home

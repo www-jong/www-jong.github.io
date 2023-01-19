@@ -1,0 +1,14 @@
+---
+layout: post
+title:  "백준 n번 테스트22"
+date:   2022-01-19 23:53:24 +0900
+categories: baekjun
+---
+하이
+잘되나?
+이건 포스트 디렉토리안임!
+```python
+def test(hi):
+    return hi
+print(test("hi"))
+```

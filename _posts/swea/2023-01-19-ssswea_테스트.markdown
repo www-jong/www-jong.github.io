@@ -1,0 +1,19 @@
+---
+layout: post
+title:  "swea테스트"
+date:   2022-01-19 23:34:00 +0900
+categories: swea
+---
+
+swea 테스트임다
+```python
+a=10
+b=20
+c=30
+print(a+b+c)
+```
+
+
+[jekyll-docs]: https://jekyllrb.com/docs/home
+[jekyll-gh]:   https://github.com/jekyll/jekyll
+[jekyll-talk]: https://talk.jekyllrb.com/

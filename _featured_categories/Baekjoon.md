@@ -3,14 +3,14 @@
 layout: list
 
 # The title of the tag's page.
-title: Baekjun
+title: Baekjoon
 
 # The name of the tag, used in a post's front matter (e.g. tags: [<slug>]).
-slug: Baekjun
+slug: Baekjoon
 
 # (Optional) Write a short (~150 characters) description of this featured tag.
 description: >
-  baekjun문제 풀이를 정리했습니다.
+  baekjoon문제 풀이를 정리했습니다.
 
 # (Optional) You can disable grouping posts by date.
 # no_groups: true

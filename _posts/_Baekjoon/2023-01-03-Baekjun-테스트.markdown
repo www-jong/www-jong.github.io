@@ -2,7 +2,7 @@
 layout: post
 title:  "백준 n번 테스트"
 date:   2022-01-03 18:24:24 +0900
-categories: baekjun
+categories: baekjoon
 ---
 하이
 ```python

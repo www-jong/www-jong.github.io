@@ -53,13 +53,13 @@ author:
 menu:
   - title:             About
     url:               /about/
-  - title:             Baekjun
-    url:               /baekjun/
+  - title:             Baekjoon
+    url:               /baekjoon/
   - title:             Swea
     url:               /swea/
-  - title:             TIL
+  - title:             Til
     url:               /til/
-  - title:             Documentation
+  - title:             Docs
     url:               /docs/
 
 

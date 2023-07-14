@@ -1,8 +1,9 @@
 ---
 layout: post
-title:  "til테스트"
-date:   2023-07-14 14:45:00 +0900
+title: til테스트
+date: '2023-07-14 14:45:00 +0900'
 categories: til
+published: true
 ---
 
 swea 테스트임다
@@ -11,6 +12,7 @@ a=10
 b=20
 c=30
 print(a+b+c)
+print('hi!')
 ```
 
 

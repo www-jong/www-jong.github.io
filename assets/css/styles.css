@@ -1,0 +1,94 @@
+/* 기본 리셋 */
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif; color: #111; background: #f6f9fb; }
+
+/* 공통 레이아웃 */
+.site-header { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; gap: 12px; padding: 16px 20px; background: #ffffffd9; backdrop-filter: blur(6px); border-bottom: 1px solid #eee; }
+.site-header h1 { margin: 0; font-size: 18px; font-weight: 600; }
+.site-header .title-link { color: inherit; text-decoration: none; }
+.back-link { text-decoration: none; color: #2563eb; }
+.print-button { margin-left: auto; padding: 8px 12px; border-radius: 8px; border: 1px solid #e5e7eb; background: #f9fafb; cursor: pointer; }
+.print-button:hover { background: #f3f4f6; }
+
+.site-footer { padding: 24px 20px; text-align: center; color: #6b7280; border-top: 1px solid #eee; }
+
+.home { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; padding: 32px 20px; max-width: 1000px; margin: 0 auto; }
+.card { border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; background: #fff; }
+.button { display: inline-block; padding: 10px 14px; background: #2563eb; color: #fff; border-radius: 8px; text-decoration: none; }
+.button:hover { background: #1d4ed8; }
+
+/* 사이드바 레이아웃 */
+.layout { display: grid; grid-template-columns: 260px 1fr; gap: 0; min-height: 100vh; }
+.sidebar { position: sticky; top: 64px; align-self: start; height: calc(100vh - 64px); overflow: auto; padding: 16px; border-right: 1px solid #cde9cd; background: #eafdea; }
+.sidebar-title { margin: 8px 0 12px; font-size: 14px; color: #6b7280; }
+.sidebar-nav { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.sidebar-nav a { display: block; padding: 8px 10px; border-radius: 8px; text-decoration: none; color: #374151; }
+.sidebar-nav a:hover { background: #e5e7eb; }
+.sidebar-nav a.active { background: #2563eb; color: #fff; }
+
+.content { padding: 24px 20px; max-width: 1100px; }
+.section { padding: 12px 0 28px; border-bottom: 1px solid #f1f5f9; }
+.section h2 { margin: 0 0 10px; font-size: 20px; }
+.section h3 { margin: 14px 0 8px; font-size: 16px; color: #111827; }
+.tags { display: flex; flex-wrap: wrap; gap: 8px; padding: 0; list-style: none; }
+.tags li { background: #eef2ff; color: #1e40af; padding: 6px 10px; border-radius: 999px; border: 1px solid #e0e7ff; }
+
+/* 가로 스크롤 유틸 */
+.scroll-x { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.scroll-y { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.no-wrap { white-space: nowrap; }
+/* 긴 단어 자동 줄바꿈 */
+body, .content, .section, p, li, td, th { overflow-wrap: anywhere; word-break: break-word; max-width: 100%; }
+.section p, .section ul, .section ol, .section pre, .section table { max-width: 100%; }
+
+/* 코드/프리포맷 */
+pre { background: #0b1020; color: #e5e7eb; padding: 14px; border-radius: 10px; overflow: auto; line-height: 1.45; }
+code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 0.95em; }
+pre code { white-space: pre; }
+
+/* 표 스타일 */
+.table-wrap { border: 1px solid #e5e7eb; border-radius: 10px; }
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; text-align: left; }
+thead th { position: sticky; top: 0; background: #f8fafc; z-index: 1; }
+tbody tr:nth-child(even) { background: #fafafa; }
+
+/* 반응형 */
+@media (max-width: 860px) {
+	.layout { grid-template-columns: 1fr; }
+	.sidebar { position: static; height: auto; border-right: none; border-bottom: 1px solid #eee; }
+}
+
+/* 요청: 큰 화면에서는 상단 헤더 숨김, 작은 화면에서만 표시 */
+@media (min-width: 861px) {
+	.page-doc .site-header { display: none; }
+	/* 헤더가 숨겨지면 사이드바 offset 보정 */
+	.page-doc .sidebar { position: fixed; left: 0; top: 0; height: 100vh; width: 260px; z-index: 90; }
+	.page-doc .layout { min-height: calc(100vh - 72px); grid-template-columns: 1fr; padding-left: 260px; padding-right: 260px; }
+}
+
+/* 포트폴리오: 가로형 섹션도 화면 폭 안에 줄바꿈되어 들어오게 */
+@media (min-width: 861px) {
+	.page-horizontal .layout { display: grid; grid-template-columns: 260px 1fr; }
+	.page-horizontal .content { padding: 24px 20px; }
+	.page-horizontal .content-inner { display: grid; grid-template-columns: repeat(auto-fill, minmax(520px, 1fr)); gap: 24px; }
+	.page-horizontal .section { min-width: 0; border-right: none; border-bottom: 1px solid #f1f5f9; padding: 12px 20px 28px; }
+}
+
+/* 인쇄(PDF) 스타일 */
+@media print {
+	.site-header, .site-footer, .fab { display: none !important; }
+	/* 사이드바 포함하여 좌우 2단 인쇄 */
+	.sidebar { display: block !important; position: static !important; height: auto !important; background: #fff !important; border-right: 1px solid #e5e7eb !important; }
+	.layout { grid-template-columns: 260px 1fr !important; padding-left: 0 !important; }
+	.content { max-width: none; padding: 0 16px; }
+	.section { break-inside: avoid; page-break-inside: avoid; }
+}
+
+/* 우측하단 FAB */
+.fab { position: fixed; right: 16px; bottom: 16px; display: flex; flex-direction: column; gap: 12px; z-index: 200; }
+.fab-btn { width: 52px; height: 52px; border-radius: 999px; border: 1px solid #e5e7eb; background: #ffffffd9; backdrop-filter: blur(6px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); cursor: pointer; font-size: 22px; display: inline-flex; align-items: center; justify-content: center; color: #111; text-decoration: none; }
+.fab-btn:hover { background: #f3f4f6; }
+

@@ -9,7 +9,7 @@ section.section{min-height:100vh;display:flex;align-items:center;padding:4rem 0}
 .navbar-green .nav-link.active{font-weight:700}
 .toc-sticky{position:sticky;top:1rem}
 @media (min-width: 992px){
-  #sideNav{position:sticky;top:0;height:100vh;overflow:auto}
+  #sideNav{position:sticky;top:0;max-height:100vh;overflow:auto}
 }
 /* 프로젝트 섹션 내 장문 엔트리 */
 .project-entry{min-height:100vh;padding:2rem 0;border-bottom:1px solid #e9ecef}

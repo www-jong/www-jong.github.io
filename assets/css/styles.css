@@ -9,8 +9,13 @@ section.section{min-height:100vh;display:flex;align-items:center;padding:4rem 0}
 .navbar-green .nav-link.active{font-weight:700}
 .toc-sticky{position:sticky;top:1rem}
 @media (min-width: 992px){
-  #sideNav{position:sticky;top:0;max-height:100vh;overflow:auto}
+  #sideNav{position:sticky;top:0;z-index:1020;max-height:100vh;overflow:auto;width:280px;max-width:280px;flex:0 0 280px}
+  #sideNav>.p-4{padding:20px}
+  main.col-lg-9,main.col-xl-10{flex:1 1 auto;width:auto;max-width:calc(100% - 280px)}
 }
+/*  #sideNav{position:sticky;top:0;max-height:100vh;overflow:auto;width:260px;flex:0 0 260px}
+  main.col-lg-9,main.col-xl-10{flex:1 1 auto;width:auto} */
+
 /* 프로젝트 섹션 내 장문 엔트리 */
 .project-entry{min-height:100vh;padding:2rem 0;border-bottom:1px solid #e9ecef}
 .project-entry:last-child{border-bottom:0}
@@ -21,3 +26,12 @@ section.section{min-height:100vh;display:flex;align-items:center;padding:4rem 0}
 }
 
 
+/* Certificates & Awards typography/layout */
+.credential-item,.award-item{border-bottom:1px solid #e9ecef;padding-bottom:1rem}
+.credential-item:last-child,.award-item:last-child{border-bottom:0}
+.credential-title,.award-title{font-size:1.5rem}
+.credential-date,.award-date{font-size:1.125rem}
+.credential-issuer,.award-org{font-size:.9rem}
+
+/* Left-fixed gutter for portfolio sections */
+.container-left{margin-left:20px;margin-right:auto}

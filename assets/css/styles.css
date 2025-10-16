@@ -1,6 +1,8 @@
 /* 공용 스타일 */
 html,body{scroll-behavior:smooth}
-section.section{min-height:100vh;display:flex;align-items:center;padding:4rem 0}
+section.section{min-height:100vh;padding:4rem 0}
+/* About only: make inner container flex column for vertical centering */
+#about.section>.container{display:flex;flex-direction:column;min-height:calc(100vh - 8rem)}
 .navbar-green{background:#16a34a !important}
 .navbar-green .navbar-brand{color:#fff !important}
 .navbar-green .nav-link{color:#b7f7c9 !important;font-size:1.125rem}
@@ -35,3 +37,23 @@ section.section{min-height:100vh;display:flex;align-items:center;padding:4rem 0}
 
 /* Left-fixed gutter for portfolio sections */
 .container-left{margin-left:20px;margin-right:auto}
+
+/* About photo */
+.about-photo{width:260px;height:260px;object-fit:cover}
+.social-icon{width:28px;height:28px;object-fit:contain}
+/* About section: split alignment for title vs content */
+/* global two-block layout: title top, content vertically centered */
+#about.section>.container .section-content{margin-top:auto;margin-bottom:auto}
+/* Section headings size up */
+.section h2{font-size:2.25rem}
+@media (min-width: 992px){
+  .section h2{font-size:2.5rem}
+}
+/* About section follows global top alignment */
+#about.section{align-items:flex-start}
+/* Skills badges */
+.skills-group{margin-bottom:1.5rem}
+.skills-group h6{margin-bottom:.75rem}
+.skill-badges{display:flex;flex-wrap:wrap;gap:.5rem}
+.skill-badge{display:inline-block;padding:.5rem .75rem;border-radius:9999px;border:1px solid #10b981;background:#ecfdf5;color:#065f46;font-weight:600;font-size:.95rem}
+.skill-badge:hover{background:#d1fae5}

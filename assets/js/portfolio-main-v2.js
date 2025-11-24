@@ -225,6 +225,89 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // ============================================
+    // 섹션 분할 (스크롤 스냅 대응)
+    // ============================================
+
+    function paginateTallSections() {
+        if (window.innerWidth < 1024) return;
+
+        const sections = document.querySelectorAll('.section[id]');
+
+        sections.forEach(section => {
+            if (section.dataset.paginated === 'true') return;
+            paginateSection(section);
+        });
+    }
+
+    function paginateSection(section) {
+        const container = section.querySelector('.section-container');
+        if (!container) return;
+
+        const computedStyle = window.getComputedStyle(section);
+        const paddingTop = parseFloat(computedStyle.paddingTop) || 0;
+        const paddingBottom = parseFloat(computedStyle.paddingBottom) || 0;
+        const maxContentHeight = window.innerHeight - paddingTop - paddingBottom;
+
+        if (maxContentHeight <= 0) return;
+
+        const children = Array.from(container.children);
+        if (children.length === 0) return;
+
+        const childHeights = children.map(child => child.offsetHeight);
+        const totalHeight = childHeights.reduce((sum, height) => sum + height, 0);
+
+        if (totalHeight <= maxContentHeight + 4) return;
+
+        const groups = [];
+        let currentGroup = [];
+        let currentHeight = 0;
+
+        children.forEach((child, index) => {
+            const blockHeight = childHeights[index];
+
+            if (currentHeight + blockHeight > maxContentHeight && currentGroup.length > 0) {
+                groups.push(currentGroup);
+                currentGroup = [];
+                currentHeight = 0;
+            }
+
+            currentGroup.push(child);
+            currentHeight += blockHeight;
+        });
+
+        if (currentGroup.length > 0) {
+            groups.push(currentGroup);
+        }
+
+        if (groups.length <= 1) return;
+
+        container.innerHTML = '';
+        groups[0].forEach(node => container.appendChild(node));
+        section.dataset.paginated = 'true';
+
+        let insertAfter = section;
+
+        for (let i = 1; i < groups.length; i++) {
+            const dummySection = section.cloneNode(false);
+            dummySection.removeAttribute('id');
+            dummySection.dataset.dummySection = 'true';
+
+            const dummyContainer = container.cloneNode(false);
+            dummyContainer.innerHTML = '';
+            dummySection.appendChild(dummyContainer);
+
+            groups[i].forEach(node => dummyContainer.appendChild(node));
+
+            insertAfter.parentNode.insertBefore(dummySection, insertAfter.nextSibling);
+            insertAfter = dummySection;
+        }
+    }
+
+    window.addEventListener('load', function() {
+        setTimeout(paginateTallSections, 300);
+    });
+
+    // ============================================
     // 키보드 네비게이션
     // ============================================
     

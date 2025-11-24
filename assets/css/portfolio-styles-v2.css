@@ -53,6 +53,7 @@ body {
   color: var(--text-primary);
   line-height: 1.6;
   overflow-x: hidden;
+  overflow-y: hidden;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
@@ -214,6 +215,9 @@ body {
   margin-left: var(--nav-width);
   width: calc(100% - var(--nav-width));
   min-height: 100vh;
+  height: 100vh;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
 }
 
 /* ============================================
@@ -225,6 +229,8 @@ body {
   padding: 4rem 3rem;
   display: flex;
   align-items: flex-start;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
 }
 
 /* About 섹션만 중앙 정렬 */
@@ -944,6 +950,10 @@ body {
 }
 
 @media screen and (max-width: 768px) {
+  body {
+      overflow-y: auto;
+  }
+
   .side-nav {
       width: 100%;
       position: relative;
@@ -955,11 +965,16 @@ body {
   .main-content {
       margin-left: 0;
       width: 100%;
+      height: auto;
+      overflow: visible;
+      scroll-snap-type: none;
   }
 
   .section {
       padding: 2rem 1.5rem;
       min-height: auto;
+      scroll-snap-align: none;
+      scroll-snap-stop: normal;
   }
 
   .theme-toggle {

@@ -253,7 +253,16 @@ document.addEventListener('DOMContentLoaded', function() {
         const children = Array.from(container.children);
         if (children.length === 0) return;
 
-        const childHeights = children.map(child => child.offsetHeight);
+        const stickyNodes = children.filter(child =>
+            child.classList.contains('section-title') ||
+            child.classList.contains('section-subtitle') ||
+            child.hasAttribute('data-sticky')
+        );
+
+        const contentNodes = children.filter(child => !stickyNodes.includes(child));
+        if (contentNodes.length === 0) return;
+
+        const childHeights = contentNodes.map(child => child.offsetHeight);
         const totalHeight = childHeights.reduce((sum, height) => sum + height, 0);
 
         if (totalHeight <= maxContentHeight + 4) return;
@@ -262,7 +271,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let currentGroup = [];
         let currentHeight = 0;
 
-        children.forEach((child, index) => {
+        contentNodes.forEach((child, index) => {
             const blockHeight = childHeights[index];
 
             if (currentHeight + blockHeight > maxContentHeight && currentGroup.length > 0) {
@@ -282,6 +291,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (groups.length <= 1) return;
 
         container.innerHTML = '';
+        stickyNodes.forEach(node => container.appendChild(node));
         groups[0].forEach(node => container.appendChild(node));
         section.dataset.paginated = 'true';
 
@@ -294,6 +304,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const dummyContainer = container.cloneNode(false);
             dummyContainer.innerHTML = '';
+            stickyNodes.forEach(node => dummyContainer.appendChild(node.cloneNode(true)));
             dummySection.appendChild(dummyContainer);
 
             groups[i].forEach(node => dummyContainer.appendChild(node));

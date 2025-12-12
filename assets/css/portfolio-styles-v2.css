@@ -398,6 +398,24 @@ body {
   margin-bottom: 0.5rem;
 }
 
+.edu-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.5rem;
+}
+
+.edu-meta .period {
+  margin-bottom: 0;
+}
+
+.edu-org {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
 .desc {
   color: var(--text-secondary);
   font-size: 0.9rem;

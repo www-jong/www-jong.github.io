@@ -664,6 +664,25 @@ body {
   margin: 0;
 }
 
+.architecture-diagram {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.diagram-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.75rem;
+  border: 2px solid var(--border-color);
+  box-shadow: 0 10px 30px rgba(16, 185, 129, 0.1);
+  transition: all 0.3s ease;
+}
+
+.diagram-image:hover {
+  border-color: var(--theme-primary);
+  box-shadow: 0 15px 40px rgba(16, 185, 129, 0.2);
+}
+
 .challenge-solution {
   display: flex;
   flex-direction: column;

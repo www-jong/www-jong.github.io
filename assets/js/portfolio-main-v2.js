@@ -49,9 +49,97 @@ document.addEventListener('DOMContentLoaded', function() {
     // 네비게이션 및 스크롤
     // ============================================
     
-    // Smooth scroll for navigation links
+    const sections = document.querySelectorAll('.section[id]');
     const navLinks = document.querySelectorAll('.nav-link, .detail-link');
     
+    // 스크롤 컨테이너 찾기
+    const mainContent = document.querySelector('.main-content');
+    
+    // 프로그래매틱 스크롤 플래그
+    let isProgrammaticScroll = false;
+    let programmaticScrollTimeout = null;
+    
+    // 현재 활성화된 섹션 찾기 (뷰포트 중심 기준)
+    function getCurrentSection() {
+        const container = mainContent || window;
+        const containerScrollTop = mainContent ? mainContent.scrollTop : window.pageYOffset;
+        const containerHeight = mainContent ? mainContent.clientHeight : window.innerHeight;
+        const viewportCenter = containerScrollTop + containerHeight / 2;
+        
+        let closestSection = null;
+        let minDistance = Infinity;
+        
+        sections.forEach(section => {
+            const rect = section.getBoundingClientRect();
+            const sectionTop = section.offsetTop;
+            const sectionHeight = section.offsetHeight;
+            const sectionCenter = sectionTop + sectionHeight / 2;
+            
+            // 뷰포트에 보이는 섹션만 고려
+            const isVisible = rect.top < containerHeight && rect.bottom > 0;
+            
+            if (isVisible) {
+                // 뷰포트 중심과 섹션 중심 사이의 거리
+                const distance = Math.abs(viewportCenter - sectionCenter);
+                
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestSection = section;
+                }
+            }
+        });
+        
+        return closestSection;
+    }
+    
+    // 네비게이션 링크 활성화 업데이트
+    function updateActiveNav() {
+        // 프로그래매틱 스크롤 중이면 무시
+        if (isProgrammaticScroll) return;
+        
+        const currentSection = getCurrentSection();
+        
+        if (currentSection) {
+            const sectionId = currentSection.getAttribute('id');
+            
+            // 모든 링크 비활성화
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // 현재 섹션 링크 활성화
+            const activeLink = document.querySelector(`.nav-link[href="#${sectionId}"]`);
+            if (activeLink) {
+                activeLink.classList.add('active');
+            }
+        }
+    }
+    
+    // 스크롤 이벤트 (requestAnimationFrame 사용)
+    let ticking = false;
+    
+    function onScroll() {
+        if (!ticking) {
+            requestAnimationFrame(() => {
+                updateActiveNav();
+                ticking = false;
+            });
+            ticking = true;
+        }
+    }
+    
+    // .main-content에서 스크롤 이벤트 감지
+    if (mainContent) {
+        mainContent.addEventListener('scroll', onScroll, { passive: true });
+    } else {
+        // fallback: window 스크롤
+        window.addEventListener('scroll', onScroll, { passive: true });
+    }
+    
+    // 초기 활성화
+    setTimeout(updateActiveNav, 100);
+    
+    // 네비게이션 링크 클릭 이벤트
     navLinks.forEach(link => {
         link.addEventListener('click', function(e) {
             const href = this.getAttribute('href');
@@ -62,47 +150,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 const targetElement = document.getElementById(targetId);
                 
                 if (targetElement) {
+                    // 프로그래매틱 스크롤 시작
+                    isProgrammaticScroll = true;
+                    if (programmaticScrollTimeout) {
+                        clearTimeout(programmaticScrollTimeout);
+                    }
+                    
+                    // 즉시 활성화 (클릭한 링크)
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                    
                     targetElement.scrollIntoView({
                         behavior: 'smooth',
                         block: 'start'
                     });
                     
-                    // Update active link
-                    updateActiveLink(href);
+                    // 스크롤 완료 대기 후 자동 감지 재개
+                    programmaticScrollTimeout = setTimeout(() => {
+                        isProgrammaticScroll = false;
+                    }, 1000);
                 }
             }
         });
     });
-
-    // Active navigation highlighting on scroll
-    const sections = document.querySelectorAll('.section[id]');
-    
-    function highlightNav() {
-        const scrollY = window.pageYOffset + 100;
-        
-        sections.forEach(section => {
-            const sectionTop = section.offsetTop;
-            const sectionHeight = section.offsetHeight;
-            const sectionId = section.getAttribute('id');
-            
-            if (scrollY > sectionTop && scrollY <= sectionTop + sectionHeight) {
-                updateActiveLink('#' + sectionId);
-            }
-        });
-    }
-    
-    function updateActiveLink(href) {
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.classList.remove('active');
-        });
-        
-        const activeLink = document.querySelector(`.nav-link[href="${href}"]`);
-        if (activeLink) {
-            activeLink.classList.add('active');
-        }
-    }
-    
-    window.addEventListener('scroll', highlightNav);
 
     // ============================================
     // 프로젝트 카드 인터랙션
@@ -119,10 +189,28 @@ document.addEventListener('DOMContentLoaded', function() {
             const detailSection = document.getElementById('project-' + projectId);
             
             if (detailSection) {
+                // 프로그래매틱 스크롤 시작
+                isProgrammaticScroll = true;
+                if (programmaticScrollTimeout) {
+                    clearTimeout(programmaticScrollTimeout);
+                }
+                
+                // 즉시 활성화
+                const targetLink = document.querySelector(`.nav-link[href="#project-${projectId}"]`);
+                if (targetLink) {
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    targetLink.classList.add('active');
+                }
+                
                 detailSection.scrollIntoView({
                     behavior: 'smooth',
                     block: 'start'
                 });
+                
+                // 스크롤 완료 대기 후 자동 감지 재개
+                programmaticScrollTimeout = setTimeout(() => {
+                    isProgrammaticScroll = false;
+                }, 1000);
             }
         });
     });
@@ -346,22 +434,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    function getCurrentSection() {
-        const scrollY = window.pageYOffset + window.innerHeight / 2;
-        let current = null;
-        
-        sections.forEach(section => {
-            const sectionTop = section.offsetTop;
-            const sectionHeight = section.offsetHeight;
-            
-            if (scrollY >= sectionTop && scrollY < sectionTop + sectionHeight) {
-                current = section;
-            }
-        });
-        
-        return current;
-    }
-
     function navigateToNextSection(currentSection, direction) {
         if (!currentSection) return;
         
@@ -370,10 +442,31 @@ document.addEventListener('DOMContentLoaded', function() {
         const nextIndex = currentIndex + direction;
         
         if (nextIndex >= 0 && nextIndex < sectionsArray.length) {
-            sectionsArray[nextIndex].scrollIntoView({
+            const nextSection = sectionsArray[nextIndex];
+            const nextSectionId = nextSection.getAttribute('id');
+            
+            // 프로그래매틱 스크롤 시작
+            isProgrammaticScroll = true;
+            if (programmaticScrollTimeout) {
+                clearTimeout(programmaticScrollTimeout);
+            }
+            
+            // 즉시 활성화
+            const targetLink = document.querySelector(`.nav-link[href="#${nextSectionId}"]`);
+            if (targetLink) {
+                navLinks.forEach(l => l.classList.remove('active'));
+                targetLink.classList.add('active');
+            }
+            
+            nextSection.scrollIntoView({
                 behavior: 'smooth',
                 block: 'start'
             });
+            
+            // 스크롤 완료 대기 후 자동 감지 재개
+            programmaticScrollTimeout = setTimeout(() => {
+                isProgrammaticScroll = false;
+            }, 1000);
         }
     }
 

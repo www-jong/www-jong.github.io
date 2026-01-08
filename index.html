@@ -203,7 +203,7 @@
                             <h3>MOASS</h3>
                             <p class="subtitle">스마트 기기 기반 사무 통합 관리 시스템</p>
                         </div>
-                        <p class="description">WebFlux와 Reactive Programming을 활용한 비동기 처리로 높은 동시성을 달성한 업무 관리 시스템</p>
+                        <p class="description">스마트 명패 및 어플리케이션을 통해 업무 효율을 높이는 사무관리 서비스 </p>
                         <div class="tech-stack">
                             <span>Spring Boot</span>
                             <span>WebFlux</span>
@@ -331,7 +331,7 @@
                             </div>
                             <div class="tech-item">
                                 <h5>Database</h5>
-                                <p>MySQL</p>
+                                <p>MariaDB, MongoDB</p>
                             </div>
                             <div class="tech-item">
                                 <h5>Real-time</h5>
@@ -357,17 +357,42 @@
                     </div>
 
                     <div class="content-block">
-                        <h4>💡 기술적 도전과 해결</h4>
+                        <h4>💡 트러블슈팅</h4>
                         <div class="challenge-solution">
                             <div class="challenge">
-                                <h5>⚡ 비동기 처리와 높은 동시성</h5>
-                                <p><strong>문제:</strong> 다수의 사용자가 동시에 알림을 받고 화이트보드를 사용할 때 서버 부하 증가</p>
-                                <p><strong>해결:</strong> Spring WebFlux와 Reactive Programming을 활용하여 비동기 논블로킹 I/O 처리 구현. 이를 통해 서버 자원을 효율적으로 사용하고 높은 동시성을 유지하면서도 응답 속도를 개선했습니다.</p>
+                                <h5>⚡ WebFlux 환경의 자원 고갈 문제 해결</h5>
+                                <p><strong>문제 상황:</strong> 서버 가동 약 3일 후 NoClassDefFoundError (HttpClientSecure) 에러와 함께 모든 HTTPS 통신이 중단되는 장애가 반복 발생했습니다. 외부 API(Jira, GitLab, Mattermost)가 간헐적으로 응답을 지연시킬 때마다 WebClient의 기본 설정(무제한 타임아웃)으로 인해 커넥션이 좀비 상태로 누적되었고, 72시간 동안 쌓인 커넥션들이 네이티브 메모리를 소진시켰습니다. 결국 새로운 HTTPS 연결 시도 시 SSL 엔진 초기화에 필요한 네이티브 메모리 할당이 실패하며 클래스 로딩 자체가 불가능해진 상황이었습니다.</p>
+                                <p><strong>원인 분석:</strong> WebFlux는 적은 수의 이벤트 루프 쓰레드로 높은 동시성을 제공하기 때문에 쓰레드 풀 고갈은 발생하지 않았습니다. 하지만 각 HTTP 커넥션이 점유하는 소켓 버퍼, SSL 세션 메모리 등 OS 레벨의 네이티브 자원은 타임아웃 없이 무한정 유지되고 있었습니다. Reactor Netty의 기본 설정은 Elastic 커넥션 풀을 사용해 제한 없이 커넥션을 생성하므로, 외부 API 지연이 반복될수록 자원이 선형적으로 증가했습니다.</p>
+                                <p><strong>해결 방법:</strong></p>
+                                <ul class="feature-list">
+                                    <li><strong>서비스별 커넥션 풀 격리</strong> - ConnectionProvider로 mmApiConnectionPool, gitlabApiConnectionPool, jiraApiConnectionPool을 분리 구성하여 특정 서비스 장애가 전체 시스템으로 전파되지 않도록 벌크헤드 패턴 적용</li>
+                                    <li><strong>자동 회수 메커니즘 도입</strong> - evictInBackground(Duration.ofMinutes(5))로 5분마다 손상되거나 유휴 상태인 커넥션을 백그라운드 스레드가 강제 정리하도록 설정</li>
+                                    <li><strong>3단계 타임아웃 방어</strong> - responseTimeout(10s), ReadTimeoutHandler(10s), WriteTimeoutHandler(10s)를 중첩 적용해 어떤 레이어에서든 응답 없는 커넥션이 즉시 해제되도록 구성</li>
+                                </ul>
+                                <p><strong>결과:</strong> 설정 변경 후 3일 주기 장애가 완전히 사라졌고, 2주 이상 연속 가동 시에도 메모리 사용량이 안정적으로 유지되었습니다. 이 경험을 통해 Reactive 스택에서는 애플리케이션 레벨의 비동기 처리만큼이나 시스템 레벨의 자원 회수 전략이 프로덕션 안정성에 결정적이라는 점을 배웠습니다.</p>
                             </div>
                             <div class="challenge">
-                                <h5>🔔 실시간 알림 시스템</h5>
-                                <p><strong>문제:</strong> 다양한 외부 API(JIRA, Mattermost, GitLab)의 알림을 실시간으로 통합 제공 필요</p>
-                                <p><strong>해결:</strong> SSE(Server-Sent Events)를 활용하여 서버에서 클라이언트로 실시간 푸시 알림 구현. WebSocket보다 가벼운 SSE를 선택하여 단방향 알림에 최적화했습니다.</p>
+                                <h5>🔧 Mattermost 웹훅 연동 자동화</h5>
+                                <p><strong>문제 상황:</strong> Mattermost는 Jira, GitLab과 달리 OAuth2 표준 인증을 제공하지 않아 사용자가 직접 Mattermost 설정 페이지에 들어가 웹훅 URL을 생성하고 복사해야 했습니다. 이 다단계 수동 설정 과정은 사용자 경험을 저해했고, URL 복사 오류나 권한 설정 누락 등의 문제가 발생했습니다.</p>
+                                <p><strong>해결 방법:</strong></p>
+                                <ul class="feature-list">
+                                    <li><strong>세션 기반 인증 파이프라인</strong> - Mattermost 로그인 API로 ID/PW를 전송해 세션 토큰을 직접 발급받고, 이를 WebClient 헤더에 바인딩하여 사용자 대신 설정 작업을 대행하는 프록시 레이어 구현</li>
+                                    <li><strong>웹훅 생성 자동화</strong> - 사용자가 앱에서 채널 선택 시 서버가 '기존 웹훅 조회 → 중복 제거 → 신규 웹훅 생성' 플로우를 자동 실행하고, 채널 ID와 웹훅 URL을 DB에 매핑해 관리</li>
+                                    <li><strong>메타데이터 보강</strong> - 웹훅으로 수신한 메시지 원본에 팀 아이콘, 채널명, 발신자 프로필 등 컨텍스트 정보를 결합하여 가독성 높은 알림 페이로드 생성</li>
+                                </ul>
+                                <p><strong>결과:</strong> 연동 과정이 '클릭 한 번'으로 단축되었고, 비표준 인증 방식에서도 안정적인 자동화 플로우를 구축할 수 있었습니다.</p>
+                            </div>
+                            <div class="challenge">
+                                <h5>🔔 SSE/FCM 기반 멀티채널 알림 시스템</h5>
+                                <p><strong>문제 상황:</strong> GitLab, Jira, Mattermost, EDU SSAFY 등 4개 외부 시스템에서 발생하는 이벤트를 웹/모바일/임베디드 기기(Electron-React) 환경에 실시간으로 전달해야 했습니다. 각 시스템은 서로 다른 이벤트 포맷(REST, Webhook, Polling)을 사용했고, 세 가지 클라이언트 환경에서 모두 동일한 알림을 즉시 수신해야 했습니다.</p>
+                                <p><strong>해결 방법:</strong></p>
+                                <ul class="feature-list">
+                                    <li><strong>SSE 실시간 푸시 적용</strong> - 서버에서 클라이언트로 지속적인 단방향 푸시가 가능한 SSE를 선택해 Spring WebFlux의 Flux&lt;ServerSentEvent&gt;로 이벤트 스트림을 유지하고, 웹/Electron 환경에서 실시간 알림 수신 구현</li>
+                                    <li><strong>FCM 모바일 푸시 병렬 발송</strong> - 모바일 앱은 백그라운드 상태에서 SSE 연결이 끊기므로, FCM을 함께 사용해 앱 상태와 관계없이 알림을 보장하는 듀얼 채널 구조 설계</li>
+                                    <li><strong>이벤트 정규화 레이어</strong> - 각 외부 시스템의 웹훅/REST 응답을 공통 Event 도메인 모델로 변환하는 어댑터 패턴을 적용해 알림 로직 통합</li>
+                                    <li><strong>Reactive 이벤트 파이프라인</strong> - WebFlux의 Non-blocking 처리로 수백 개의 알림 메시지를 동시 처리할 때도 쓰레드 블로킹 없이 이벤트 전파</li>
+                                </ul>
+                                <p><strong>결과:</strong> 4개 외부 시스템의 알림이 웹/모바일/임베디드 기기에 동시 전송되었고, SSE 재연결 로직으로 네트워크 순단 시에도 알림 누락을 방지했습니다. 부하 테스트 시 수백 건의 동시 알림 발송에도 지연 없이 처리되었습니다.</p>
                             </div>
                         </div>
                     </div>
@@ -459,7 +484,7 @@
                     </div>
 
                     <div class="content-block">
-                        <h4>💡 기술적 도전과 해결</h4>
+                        <h4>💡 트러블슈팅</h4>
                         <div class="challenge-solution">
                             <div class="challenge">
                                 <h5>🔌 이기종 기기 호환성 확보</h5>
@@ -564,7 +589,7 @@
                     </div>
 
                     <div class="content-block">
-                        <h4>💡 기술적 도전과 해결</h4>
+                        <h4>💡 트러블슈팅</h4>
                         <div class="challenge-solution">
                             <div class="challenge">
                                 <h5>📊 추천 알고리즘 구현</h5>
@@ -664,7 +689,7 @@
                     </div>
 
                     <div class="content-block">
-                        <h4>💡 기술적 도전과 해결</h4>
+                        <h4>💡 트러블슈팅</h4>
                         <div class="challenge-solution">
                             <div class="challenge">
                                 <h5>🌱 데이터 전처리 및 피처 엔지니어링</h5>

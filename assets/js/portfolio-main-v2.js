@@ -59,37 +59,18 @@ document.addEventListener('DOMContentLoaded', function() {
     let isProgrammaticScroll = false;
     let programmaticScrollTimeout = null;
     
-    // 현재 활성화된 섹션 찾기 (뷰포트 중심 기준)
+    // 심플한 섹션 감지 - 뷰포트 상단에 가장 가까운 섹션만 체크
     function getCurrentSection() {
-        const container = mainContent || window;
         const containerScrollTop = mainContent ? mainContent.scrollTop : window.pageYOffset;
-        const containerHeight = mainContent ? mainContent.clientHeight : window.innerHeight;
-        const viewportCenter = containerScrollTop + containerHeight / 2;
         
-        let closestSection = null;
-        let minDistance = Infinity;
-        
-        sections.forEach(section => {
-            const rect = section.getBoundingClientRect();
-            const sectionTop = section.offsetTop;
-            const sectionHeight = section.offsetHeight;
-            const sectionCenter = sectionTop + sectionHeight / 2;
-            
-            // 뷰포트에 보이는 섹션만 고려
-            const isVisible = rect.top < containerHeight && rect.bottom > 0;
-            
-            if (isVisible) {
-                // 뷰포트 중심과 섹션 중심 사이의 거리
-                const distance = Math.abs(viewportCenter - sectionCenter);
-                
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    closestSection = section;
-                }
+        // 간단하게: 스크롤 위치보다 아래에 있는 첫 번째 섹션 찾기
+        for (let i = sections.length - 1; i >= 0; i--) {
+            if (sections[i].offsetTop <= containerScrollTop + 100) {
+                return sections[i];
             }
-        });
+        }
         
-        return closestSection;
+        return sections[0];
     }
     
     // 네비게이션 링크 활성화 업데이트
@@ -115,20 +96,18 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // 스크롤 이벤트 (requestAnimationFrame 사용)
-    let ticking = false;
+    // 스크롤 이벤트 - 더 공격적인 쓰로틀링 (200ms)
+    let scrollTimeout;
     
     function onScroll() {
-        if (!ticking) {
-            requestAnimationFrame(() => {
-                updateActiveNav();
-                ticking = false;
-            });
-            ticking = true;
-        }
+        // 스크롤이 멈춘 후에만 업데이트 (디바운싱)
+        clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(() => {
+            updateActiveNav();
+        }, 200);
     }
     
-    // .main-content에서 스크롤 이벤트 감지
+    // .main-content에서 스크롤 이벤트 감지 (passive: true로 성능 향상)
     if (mainContent) {
         mainContent.addEventListener('scroll', onScroll, { passive: true });
     } else {
@@ -219,77 +198,24 @@ document.addEventListener('DOMContentLoaded', function() {
     // 애니메이션
     // ============================================
     
-    // Intersection Observer for fade-in animations
-    const observerOptions = {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-    };
-    
-    const observer = new IntersectionObserver(function(entries) {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.style.opacity = '1';
-                entry.target.style.transform = 'translateY(0)';
-            }
-        });
-    }, observerOptions);
-    
-    // Observe elements for animation
+    // 애니메이션 완전 제거 - 심플하게!
+    // 모든 요소 즉시 표시 (IntersectionObserver 제거)
     const animatedElements = document.querySelectorAll('.edu-item, .award-card, .cert-card, .project-summary-card, .content-block');
     animatedElements.forEach(el => {
-        el.style.opacity = '0';
-        el.style.transform = 'translateY(20px)';
-        el.style.transition = 'all 0.6s ease-out';
-        observer.observe(el);
+        el.style.opacity = '1';
+        el.style.transform = 'translateY(0)';
     });
 
-    // Smooth appearance for sections
+    // 섹션 애니메이션도 제거 - 즉시 표시
     const sectionContainers = document.querySelectorAll('.section-container');
     sectionContainers.forEach(container => {
-        container.style.opacity = '0';
-        container.style.transform = 'translateY(30px)';
-        container.style.transition = 'all 0.8s ease-out';
-    });
-    
-    const containerObserver = new IntersectionObserver(function(entries) {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.style.opacity = '1';
-                entry.target.style.transform = 'translateY(0)';
-            }
-        });
-    }, { threshold: 0.1 });
-    
-    sectionContainers.forEach(container => {
-        containerObserver.observe(container);
+        container.style.opacity = '1';
+        container.style.transform = 'translateY(0)';
     });
 
     // ============================================
-    // 호버 효과
+    // 호버 효과 - 모두 CSS에서 처리 (JS 제거)
     // ============================================
-    
-    // Add hover effect enhancement for project cards
-    projectCards.forEach(card => {
-        card.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-12px) scale(1.02)';
-        });
-        
-        card.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0) scale(1)';
-        });
-    });
-
-    // Add progress indicator for skills (optional animation)
-    const skillTags = document.querySelectorAll('.skill-tag');
-    skillTags.forEach(tag => {
-        tag.addEventListener('mouseenter', function() {
-            this.style.transform = 'scale(1.05)';
-        });
-        
-        tag.addEventListener('mouseleave', function() {
-            this.style.transform = 'scale(1)';
-        });
-    });
 
     // ============================================
     // PDF 내보내기 최적화
@@ -402,9 +328,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    window.addEventListener('load', function() {
-        setTimeout(paginateTallSections, 300);
-    });
+    // 페이지네이션 비활성화 (성능 최적화)
+    // window.addEventListener('load', function() {
+    //     setTimeout(paginateTallSections, 300);
+    // });
 
     // ============================================
     // 키보드 네비게이션

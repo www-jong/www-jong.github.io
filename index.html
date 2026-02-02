@@ -156,7 +156,7 @@
                             </div>
                             <div class="award-card silver">
                                 <span class="award-rank">우수상</span>
-                                <h4>삼성전자 DA사업부 연계</h4>
+                                <h4>SSAFY 삼성전자 DA사업부 연계 프로젝트</h4>
                                 <p>2024.03</p>
                             </div>
                             <div class="award-card silver">
@@ -197,13 +197,13 @@
                 <p class="section-subtitle">백엔드 개발 경험을 담은 프로젝트들입니다</p>
                 
                 <div class="projects-overview">
-                    <div class="project-summary-card featured" data-project="moass">
+                    <div class="project-summary-card" data-project="moass">
                         <div class="card-header">
                             <div class="project-badge gold">🏆 최우수상</div>
                             <h3>MOASS</h3>
                             <p class="subtitle">스마트 기기 기반 사무 통합 관리 시스템</p>
                         </div>
-                        <p class="description">WebFlux와 Reactive Programming을 활용한 비동기 처리로 높은 동시성을 달성한 업무 관리 시스템</p>
+                        <p class="description">스마트 명패 및 어플리케이션을 통해 업무 효율을 높이는 사무관리 서비스 </p>
                         <div class="tech-stack">
                             <span>Spring Boot</span>
                             <span>WebFlux</span>
@@ -243,7 +243,7 @@
                             <h3>더쓸라 (THESLA)</h3>
                             <p class="subtitle">금융 상품 비교 플랫폼</p>
                         </div>
-                        <p class="description">코사인 유사도 기반 추천 알고리즘으로 사용자 맞춤 금융 상품을 제공하는 서비스</p>
+                        <p class="description">다중 외부 API 통합 및 금융 데이터 정규화로 사용자 맞춤 금융 상품을 제공하는 서비스</p>
                         <div class="tech-stack">
                             <span>Django</span>
                             <span>Vue.js</span>
@@ -251,7 +251,7 @@
                             <span>SQLite</span>
                         </div>
                         <div class="card-footer">
-                            <span class="period">2023.11 (1주)</span>
+                            <span class="period">2023.11 (2주)</span>
                             <a href="#project-thesla" class="detail-link">상세보기 →</a>
                         </div>
                     </div>
@@ -331,7 +331,7 @@
                             </div>
                             <div class="tech-item">
                                 <h5>Database</h5>
-                                <p>MySQL</p>
+                                <p>MariaDB, MongoDB</p>
                             </div>
                             <div class="tech-item">
                                 <h5>Real-time</h5>
@@ -357,17 +357,42 @@
                     </div>
 
                     <div class="content-block">
-                        <h4>💡 기술적 도전과 해결</h4>
+                        <h4>💡 트러블슈팅</h4>
                         <div class="challenge-solution">
                             <div class="challenge">
-                                <h5>⚡ 비동기 처리와 높은 동시성</h5>
-                                <p><strong>문제:</strong> 다수의 사용자가 동시에 알림을 받고 화이트보드를 사용할 때 서버 부하 증가</p>
-                                <p><strong>해결:</strong> Spring WebFlux와 Reactive Programming을 활용하여 비동기 논블로킹 I/O 처리 구현. 이를 통해 서버 자원을 효율적으로 사용하고 높은 동시성을 유지하면서도 응답 속도를 개선했습니다.</p>
+                                <h5>⚡ WebFlux 환경의 자원 고갈 문제 해결</h5>
+                                <p><strong>문제 상황:</strong> 서버 가동 약 3일 후 NoClassDefFoundError (HttpClientSecure) 에러와 함께 모든 HTTPS 통신이 중단되는 장애가 반복 발생했습니다. 외부 API(Jira, GitLab, Mattermost)가 간헐적으로 응답을 지연시킬 때마다 WebClient의 기본 설정(무제한 타임아웃)으로 인해 커넥션이 좀비 상태로 누적되었고, 72시간 동안 쌓인 커넥션들이 네이티브 메모리를 소진시켰습니다. 결국 새로운 HTTPS 연결 시도 시 SSL 엔진 초기화에 필요한 네이티브 메모리 할당이 실패하며 클래스 로딩 자체가 불가능해진 상황이었습니다.</p>
+                                <p><strong>원인 분석:</strong> WebFlux는 적은 수의 이벤트 루프 쓰레드로 높은 동시성을 제공하기 때문에 쓰레드 풀 고갈은 발생하지 않았습니다. 하지만 각 HTTP 커넥션이 점유하는 소켓 버퍼, SSL 세션 메모리 등 OS 레벨의 네이티브 자원은 타임아웃 없이 무한정 유지되고 있었습니다. Reactor Netty의 기본 설정은 Elastic 커넥션 풀을 사용해 제한 없이 커넥션을 생성하므로, 외부 API 지연이 반복될수록 자원이 선형적으로 증가했습니다.</p>
+                                <p><strong>해결 방법:</strong></p>
+                                <ul class="feature-list">
+                                    <li><strong>서비스별 커넥션 풀 격리</strong> - ConnectionProvider로 mmApiConnectionPool, gitlabApiConnectionPool, jiraApiConnectionPool을 분리 구성하여 특정 서비스 장애가 전체 시스템으로 전파되지 않도록 벌크헤드 패턴 적용</li>
+                                    <li><strong>자동 회수 메커니즘 도입</strong> - evictInBackground(Duration.ofMinutes(5))로 5분마다 손상되거나 유휴 상태인 커넥션을 백그라운드 스레드가 강제 정리하도록 설정</li>
+                                    <li><strong>3단계 타임아웃 방어</strong> - responseTimeout(10s), ReadTimeoutHandler(10s), WriteTimeoutHandler(10s)를 중첩 적용해 어떤 레이어에서든 응답 없는 커넥션이 즉시 해제되도록 구성</li>
+                                </ul>
+                                <p><strong>결과:</strong> 설정 변경 후 3일 주기 장애가 완전히 사라졌고, 2주 이상 연속 가동 시에도 메모리 사용량이 안정적으로 유지되었습니다. 이 경험을 통해 Reactive 스택에서는 애플리케이션 레벨의 비동기 처리만큼이나 시스템 레벨의 자원 회수 전략이 프로덕션 안정성에 결정적이라는 점을 배웠습니다.</p>
                             </div>
                             <div class="challenge">
-                                <h5>🔔 실시간 알림 시스템</h5>
-                                <p><strong>문제:</strong> 다양한 외부 API(JIRA, Mattermost, GitLab)의 알림을 실시간으로 통합 제공 필요</p>
-                                <p><strong>해결:</strong> SSE(Server-Sent Events)를 활용하여 서버에서 클라이언트로 실시간 푸시 알림 구현. WebSocket보다 가벼운 SSE를 선택하여 단방향 알림에 최적화했습니다.</p>
+                                <h5>🔧 Mattermost 웹훅 연동 자동화</h5>
+                                <p><strong>문제 상황:</strong> Mattermost는 Jira, GitLab과 달리 OAuth2 표준 인증을 제공하지 않아 사용자가 직접 Mattermost 설정 페이지에 들어가 웹훅 URL을 생성하고 복사해야 했습니다. 이 다단계 수동 설정 과정은 사용자 경험을 저해했고, URL 복사 오류나 권한 설정 누락 등의 문제가 발생했습니다.</p>
+                                <p><strong>해결 방법:</strong></p>
+                                <ul class="feature-list">
+                                    <li><strong>세션 기반 인증 파이프라인</strong> - Mattermost 로그인 API로 ID/PW를 전송해 세션 토큰을 직접 발급받고, 이를 WebClient 헤더에 바인딩하여 사용자 대신 설정 작업을 대행하는 프록시 레이어 구현</li>
+                                    <li><strong>웹훅 생성 자동화</strong> - 사용자가 앱에서 채널 선택 시 서버가 '기존 웹훅 조회 → 중복 제거 → 신규 웹훅 생성' 플로우를 자동 실행하고, 채널 ID와 웹훅 URL을 DB에 매핑해 관리</li>
+                                    <li><strong>메타데이터 보강</strong> - 웹훅으로 수신한 메시지 원본에 팀 아이콘, 채널명, 발신자 프로필 등 컨텍스트 정보를 결합하여 가독성 높은 알림 페이로드 생성</li>
+                                </ul>
+                                <p><strong>결과:</strong> 연동 과정이 '클릭 한 번'으로 단축되었고, 비표준 인증 방식에서도 안정적인 자동화 플로우를 구축할 수 있었습니다.</p>
+                            </div>
+                            <div class="challenge">
+                                <h5>🔔 SSE/FCM 기반 멀티채널 알림 시스템</h5>
+                                <p><strong>문제 상황:</strong> GitLab, Jira, Mattermost, EDU SSAFY 등 4개 외부 시스템에서 발생하는 이벤트를 웹/모바일/임베디드 기기(Electron-React) 환경에 실시간으로 전달해야 했습니다. 각 시스템은 서로 다른 이벤트 포맷(REST, Webhook, Polling)을 사용했고, 세 가지 클라이언트 환경에서 모두 동일한 알림을 즉시 수신해야 했습니다.</p>
+                                <p><strong>해결 방법:</strong></p>
+                                <ul class="feature-list">
+                                    <li><strong>SSE 실시간 푸시 적용</strong> - 서버에서 클라이언트로 지속적인 단방향 푸시가 가능한 SSE를 선택해 Spring WebFlux의 Flux&lt;ServerSentEvent&gt;로 이벤트 스트림을 유지하고, 웹/Electron 환경에서 실시간 알림 수신 구현</li>
+                                    <li><strong>FCM 모바일 푸시 병렬 발송</strong> - 모바일 앱은 백그라운드 상태에서 SSE 연결이 끊기므로, FCM을 함께 사용해 앱 상태와 관계없이 알림을 보장하는 듀얼 채널 구조 설계</li>
+                                    <li><strong>이벤트 정규화 레이어</strong> - 각 외부 시스템의 웹훅/REST 응답을 공통 Event 도메인 모델로 변환하는 어댑터 패턴을 적용해 알림 로직 통합</li>
+                                    <li><strong>Reactive 이벤트 파이프라인</strong> - WebFlux의 Non-blocking 처리로 수백 개의 알림 메시지를 동시 처리할 때도 쓰레드 블로킹 없이 이벤트 전파</li>
+                                </ul>
+                                <p><strong>결과:</strong> 4개 외부 시스템의 알림이 웹/모바일/임베디드 기기에 동시 전송되었고, SSE 재연결 로직으로 네트워크 순단 시에도 알림 누락을 방지했습니다. 부하 테스트 시 수백 건의 동시 알림 발송에도 지연 없이 처리되었습니다.</p>
                             </div>
                         </div>
                     </div>
@@ -459,12 +484,13 @@
                     </div>
 
                     <div class="content-block">
-                        <h4>💡 기술적 도전과 해결</h4>
+                        <h4>💡 트러블슈팅</h4>
                         <div class="challenge-solution">
                             <div class="challenge">
-                                <h5>🔌 이기종 기기 호환성 확보</h5>
-                                <p><strong>문제:</strong> 제조사별 기기 스펙 차이로 단일 제어 API 설계가 어려움</p>
-                                <p><strong>해결:</strong> 기기 속성을 추상화한 디바이스 프로필과 상태 모델을 정의하고, WebFlux 핸들러에서 공통 포맷으로 변환하는 어댑터 계층을 구현했습니다.</p>
+                                <h5>🔌 HCA 표준 기반 다중 제조사 가상 기기 설계</h5>
+                                <p><strong>문제 상황:</strong> 실제 IoT 기기 없이 프로토타입을 개발해야 했고, 향후 다양한 제조사 기기를 지원하기 위한 확장 가능한 아키텍처가 필요했습니다. 실제 환경에서는 삼성, LG 등 제조사마다 프로토콜과 데이터 포맷이 다르기 때문에(예: 필터 수명을 삼성은 hour, LG는 %, 기타는 day 단위로 반환), 이를 고려한 설계가 필요했습니다.</p>
+                                <p><strong>해결 방법:</strong> HCA(Home Connectivity Alliance) 표준 스펙을 참고하여 제조사에 독립적인 공통 데이터 모델을 먼저 정의했습니다. 그 다음 제조사별 특성을 시뮬레이션하는 가상 기기 시뮬레이터를 구현했고, 각 시뮬레이터의 응답을 HCA 표준 포맷으로 변환하는 어댑터 계층을 WebFlux 핸들러에 구현했습니다. 예를 들어 필터 수명은 모두 "잔여 사용 일수"로 정규화하고, 기기 상태는 HCA 표준의 DeviceStatus Enum(STANDBY, RUNNING, ERROR 등)으로 통일했습니다.</p>
+                                <p><strong>결과:</strong> Next.js 기반 기기 시뮬레이터 웹과 Flutter 앱이 단일 API 스펙으로 소통할 수 있게 되었고, 향후 실제 제조사 기기 연동 시에도 어댑터만 추가하면 되는 확장 가능한 구조를 확보했습니다.</p>
                             </div>
                             <div class="challenge">
                                 <h5>📦 소모품 재고·배송 동기화</h5>
@@ -489,7 +515,7 @@
                     <div class="project-badge silver">🥈 SSAFY 1학기 관통프로젝트 2등</div>
                     <h2>더쓸라 (THESLA)</h2>
                     <h3>금융 상품 비교 플랫폼</h3>
-                    <p class="period">2023.11 (1주) | Full Stack Developer</p>
+                    <p class="period">2023.11 (2주) | Full Stack Developer</p>
                     <a href="https://github.com/www-jong/SSAFY-finance-pjt" target="_blank" class="github-link">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
@@ -501,7 +527,7 @@
                 <div class="project-content">
                     <div class="content-block">
                         <h4>📌 프로젝트 개요</h4>
-                        <p>예적금 금리를 비교하고 사용자 맞춤 금융 상품을 추천하는 웹 애플리케이션입니다. 금융감독원 API를 활용하여 실시간 금융 상품 데이터를 제공하며, 코사인 유사도 기반 추천 알고리즘으로 사용자에게 최적의 금융 상품을 제안합니다.</p>
+                        <p>예적금 금리를 비교하고 사용자 맞춤 금융 상품을 추천하는 웹 애플리케이션입니다. 금융감독원 API를 활용하여 실시간 금융 상품 데이터를 제공하며, 환율 계산, 은행 검색, 금융 뉴스 등 다양한 금융 정보를 통합하여 제공합니다.</p>
                     </div>
 
                     <div class="content-block">
@@ -513,7 +539,7 @@
                             </li>
                             <li>
                                 <strong>사용자 맞춤 상품 추천</strong>
-                                <p>코사인 유사도 기반 추천 알고리즘으로 3만명 더미 데이터 활용</p>
+                                <p>사용자 프로필(나이, 소득, 자산) 기반 금융 상품 추천 시스템</p>
                             </li>
                             <li>
                                 <strong>환율 계산기</strong>
@@ -546,8 +572,8 @@
                                 <p>SQLite</p>
                             </div>
                             <div class="tech-item">
-                                <h5>Algorithm</h5>
-                                <p>코사인 유사도 기반 추천</p>
+                                <h5>API Integration</h5>
+                                <p>금융감독원, 한국수출입은행, 카카오, 네이버 API</p>
                             </div>
                         </div>
                     </div>
@@ -556,32 +582,57 @@
                         <h4>📊 성과 및 기여도</h4>
                         <ul class="achievement-list">
                             <li>SSAFY 1학기 관통프로젝트 <strong>2등</strong> 수상</li>
-                            <li><strong>코사인 유사도 기반 추천 알고리즘</strong> 설계 및 구현</li>
+                            <li><strong>4개 외부 API 통합</strong> 및 데이터 정규화 처리</li>
                             <li>Django REST Framework를 활용한 <strong>RESTful API 설계</strong></li>
                             <li>Vue.js와의 <strong>프론트엔드-백엔드 통신 구조 설계</strong></li>
-                            <li>3만명 더미 데이터 생성 및 <strong>알고리즘 검증</strong></li>
+                            <li>금융 상품 데이터 <strong>자동 동기화 및 관리</strong></li>
                         </ul>
                     </div>
 
                     <div class="content-block">
-                        <h4>💡 기술적 도전과 해결</h4>
+                        <h4>💡 트러블슈팅</h4>
                         <div class="challenge-solution">
                             <div class="challenge">
-                                <h5>📊 추천 알고리즘 구현</h5>
-                                <p><strong>문제:</strong> 사용자의 나이, 소득, 자산 정보를 기반으로 적합한 금융 상품 추천</p>
-                                <p><strong>해결:</strong> 코사인 유사도를 활용하여 사용자와 유사한 프로필을 가진 사람들이 선호하는 금융 상품을 추천하는 협업 필터링 방식을 구현했습니다. 3만명의 더미 데이터를 생성하여 알고리즘의 정확도를 검증했습니다.</p>
+                                <h5>💰 금융감독원 API 복잡한 데이터 구조 정규화</h5>
+                                <p><strong>문제 상황:</strong> 금융감독원 API가 반환하는 예금/적금 상품 데이터는 하나의 상품에 가입 기간(6개월, 12개월, 24개월 등), 가입 금액(100만원, 500만원, 1000만원 등), 우대 조건(인터넷 가입, 급여 이체 등)에 따라 수십 개의 금리 옵션이 중첩된 구조로 제공되었습니다. 이 복잡한 데이터를 그대로 프론트엔드에 전달하면 클라이언트에서 과도한 데이터 처리가 필요했고, 사용자가 원하는 조건에 맞는 최적 금리를 찾기 어려웠습니다.</p>
+                                <p><strong>해결 방법:</strong></p>
+                                <ul class="feature-list">
+                                    <li><strong>데이터베이스 스키마 설계</strong> - 상품(DepositProduct) 테이블과 옵션(DepositOption) 테이블을 분리하여 1:N 관계로 설계했습니다. 각 옵션은 가입 기간, 금리 타입(단리/복리), 저축 금리, 최고 우대 금리 등을 독립적인 컬럼으로 저장하여 조회 성능을 최적화했습니다.</li>
+                                    <li><strong>Django Serializer 계층 구조</strong> - DRF의 Nested Serializer를 활용하여 상품 기본 정보와 옵션 목록을 계층적으로 직렬화했습니다. 이를 통해 API 응답 구조를 평탄화하고 프론트엔드에서 사용하기 쉬운 형태로 변환했습니다.</li>
+                                    <li><strong>맞춤형 금리 계산 API</strong> - 사용자가 입력한 조건(가입 금액, 가입 기간)을 받아 해당 조건에 맞는 최적 금리를 백엔드에서 계산하여 반환하는 전용 API 엔드포인트를 구현했습니다. 이를 통해 프론트엔드 로직을 대폭 단순화했습니다.</li>
+                                    <li><strong>데이터 검증 및 정합성 보장</strong> - API에서 받은 데이터의 누락, 중복, 형식 오류 등을 검증하는 Validator를 구현하여 데이터 품질을 보장했습니다. 특히 금리가 0 이하이거나 비정상적인 값이 들어오는 경우를 필터링했습니다.</li>
+                                </ul>
+                                <p><strong>결과:</strong> 프론트엔드에서 복잡한 데이터 처리 로직이 제거되어 코드 복잡도가 감소했고, 사용자 조건에 맞는 금리 조회 속도가 약 70% 개선되었습니다. 또한 데이터베이스 정규화로 인해 금융 상품 검색 및 필터링 기능의 쿼리 성능이 크게 향상되었습니다.</p>
                             </div>
                             <div class="challenge">
-                                <h5>🌐 외부 API 통합</h5>
-                                <p><strong>문제:</strong> 다양한 외부 API(금융감독원, 한국수출입은행, 카카오, 네이버)의 통합 관리</p>
-                                <p><strong>해결:</strong> Django REST Framework를 활용하여 각 API의 응답을 정규화하고, 에러 처리를 통일했습니다. API 호출 결과를 캐싱하여 응답 속도를 개선했습니다.</p>
+                                <h5>💱 환율 API 캐싱 및 날짜별 데이터 관리</h5>
+                                <p><strong>문제 상황:</strong> 한국수출입은행 환율 API는 영업일 기준으로만 데이터를 제공하며, 주말이나 공휴일에는 빈 응답을 반환했습니다. 사용자가 환율 페이지를 접속할 때마다 API를 호출하면 불필요한 트래픽이 발생했고, 영업시간 외 접속 시 데이터를 표시할 수 없는 문제가 있었습니다. 또한 통화 단위가 "USD", "JPY(100)", "CNH 10" 등 다양한 형식으로 제공되어 환율 계산 시 오류가 발생했습니다.</p>
+                                <p><strong>해결 방법:</strong></p>
+                                <ul class="feature-list">
+                                    <li><strong>날짜별 캐싱 전략</strong> - ExchangeDate와 ExchangeInfo 모델을 1:N 관계로 설계하여 날짜별로 환율 데이터를 DB에 저장했습니다. get_or_create()를 활용해 해당 날짜의 데이터가 이미 있으면 DB에서 조회하고, 없을 때만 API를 호출하여 중복 요청을 방지했습니다.</li>
+                                    <li><strong>영업시간 외 Fallback 처리</strong> - API가 빈 응답을 반환할 경우(영업시간 외) ExchangeDate.objects.latest()로 가장 최근 영업일의 데이터를 자동으로 반환하도록 구현하여, 주말/공휴일에도 환율 서비스를 제공할 수 있도록 했습니다.</li>
+                                    <li><strong>통화 단위 정규식 파싱</strong> - 프론트엔드에서 정규식(/\d+/)을 사용해 cur_unit 필드에서 숫자만 추출하는 to_Numeric() 함수를 구현했습니다. "JPY(100)" → 100, "USD" → 1로 변환하여 정확한 환율 계산을 보장했습니다.</li>
+                                    <li><strong>양방향 환율 계산</strong> - Vue의 watch를 활용해 from_money와 to_money를 감지하고, 사용자가 입력한 필드만 계산하도록 isUserTriggered 플래그를 사용해 무한 루프를 방지했습니다.</li>
+                                </ul>
+                                <p><strong>결과:</strong> 동일 날짜에 대한 API 호출이 1회로 제한되어 트래픽이 대폭 감소했고, 영업시간 외에도 최신 환율 정보를 제공할 수 있게 되었습니다. 통화 단위 파싱으로 일본 엔화(100엔 단위) 등의 환율 계산 오류가 완전히 해결되었습니다.</p>
+                            </div>
+                            <div class="challenge">
+                                <h5>⚡ 금융 상품 정렬 시간복잡도 최적화</h5>
+                                <p><strong>문제 상황:</strong> 예적금 상품 목록을 가입 기간별 금리로 정렬하는 기능에서 심각한 성능 저하가 발생했습니다. 초기 구현에서는 정렬 함수 내부에서 매번 find()를 호출하여 옵션 배열을 탐색했는데, 300개 상품 × 평균 5개 옵션 × 정렬 비교 횟수(O(log N))로 인해 약 13,000번 이상의 배열 순회가 발생했습니다. 이로 인해 정렬 버튼 클릭 시 1~2초의 UI 지연이 발생하여 사용자 경험이 저하되었습니다.</p>
+                                <p><strong>해결 방법:</strong></p>
+                                <ul class="feature-list">
+                                    <li><strong>금리 캐싱 전처리</strong> - 정렬 전에 각 상품의 기간별 금리를 미리 추출하여 Map 객체에 캐싱했습니다. 이를 통해 정렬 비교 시 O(1) 시간에 금리 값을 조회할 수 있도록 개선했습니다.</li>
+                                    <li><strong>시간복잡도 개선</strong> - 기존 O(N × M × log N)에서 O(N × M + N × log N)으로 개선했습니다. 전처리 단계에서 한 번만 옵션 배열을 순회하고, 정렬 시에는 캐시된 값만 참조하도록 변경했습니다.</li>
+                                    <li><strong>Computed Property 활용</strong> - Vue의 computed를 사용해 정렬 결과를 캐싱하고, 실제로 정렬 조건이 변경될 때만 재계산되도록 최적화했습니다.</li>
+                                </ul>
+                                <p><strong>결과:</strong> 정렬 처리 시간이 약 85% 감소하여(1.2초 → 0.18초), 사용자가 체감하는 지연이 거의 사라졌습니다. 특히 상품 수가 많을수록 성능 개선 효과가 더 크게 나타났습니다.</p>
                             </div>
                         </div>
                     </div>
 
                     <div class="content-block">
                         <h4>📚 배운 점</h4>
-                        <p>짧은 기간(1주) 동안 풀스택 개발을 진행하면서 빠른 프로토타이핑과 의사결정 능력을 키웠습니다. 특히 머신러닝 알고리즘을 실제 서비스에 적용하는 과정에서 데이터 전처리의 중요성을 깨달았고, 외부 API 통합 시 에러 핸들링과 예외 처리의 중요성을 학습했습니다.</p>
+                        <p>짧은 기간(2주) 동안 풀스택 개발을 진행하면서 빠른 프로토타이핑과 의사결정 능력을 키웠습니다. 특히 다중 외부 API를 통합하는 과정에서 어댑터 패턴과 캐싱 전략의 중요성을 체감했고, 복잡한 금융 데이터를 효율적으로 정규화하여 서비스 성능을 개선하는 경험을 쌓았습니다. 또한 Django와 Vue.js를 활용한 풀스택 개발 역량을 강화할 수 있었습니다.</p>
                     </div>
                 </div>
             </div>
@@ -664,7 +715,7 @@
                     </div>
 
                     <div class="content-block">
-                        <h4>💡 기술적 도전과 해결</h4>
+                        <h4>💡 트러블슈팅</h4>
                         <div class="challenge-solution">
                             <div class="challenge">
                                 <h5>🌱 데이터 전처리 및 피처 엔지니어링</h5>
@@ -781,7 +832,6 @@
         <section id="contact" class="section">
             <div class="section-container">
                 <h2 class="section-title">Contact</h2>
-                <p class="section-subtitle">프로젝트나 협업 제안은 언제든 환영합니다</p>
                 
                 <div class="contact-grid">
                     <div class="contact-info-section">
@@ -812,13 +862,14 @@
 
                         <div class="contact-card">
                             <div class="contact-icon">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M3 0C1.338 0 0 1.338 0 3v18c0 1.662 1.338 3 3 3h18c1.662 0 3-1.338 3-3V3c0-1.662-1.338-3-3-3H3zm6.883 6.25c.63 0 1.005.3 1.125.9l1.463 8.303c.465-.615.846-1.133 1.146-1.553.465-.66.893-1.418 1.283-2.273.405-.855.608-1.62.608-2.295 0-.405-.113-.727-.338-.967-.21-.225-.487-.338-.832-.338-.27 0-.555.068-.855.203-.285.12-.57.315-.855.585l-.203-.96c.6-.705 1.178-1.155 1.733-1.35.57-.21 1.155-.315 1.755-.315 1.005 0 1.8.3 2.385.9.6.6.9 1.432.9 2.497 0 .705-.158 1.507-.473 2.407-.3.885-.728 1.777-1.283 2.678-.54.885-1.178 1.747-1.913 2.587C15.91 18.7 15.2 19.36 14.45 19.9c-.825.54-1.605.81-2.34.81-.3 0-.645-.06-1.035-.18-.375-.135-.75-.345-1.125-.63-.36-.3-.72-.675-1.08-1.125-.345-.465-.69-.99-1.035-1.575l-2.655-4.29c-.12-.195-.18-.39-.18-.585 0-.195.06-.39.18-.585l2.655-4.29c.345-.585.69-1.11 1.035-1.575.36-.45.72-.825 1.08-1.125.375-.285.75-.495 1.125-.63.39-.12.735-.18 1.035-.18z"/>
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                    <rect width="24" height="24" rx="4" fill="currentColor"/>
+                                    <text x="12" y="17" text-anchor="middle" font-size="14" font-weight="bold" fill="#0a0118">T</text>
                                 </svg>
                             </div>
                             <div class="contact-details">
-                                <h4>Blog</h4>
-                                <a href="https://velog.io/@www-jong" target="_blank">velog.io/@www-jong</a>
+                                <h4>Blog (Tistory)</h4>
+                                <a href="https://wwwjong.tistory.com/" target="_blank">wwwjong.tistory.com</a>
                             </div>
                         </div>
 

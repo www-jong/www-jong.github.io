@@ -217,7 +217,7 @@ body {
   min-height: 100vh;
   height: 100vh;
   overflow-y: auto;
-  scroll-snap-type: y mandatory;
+  /* scroll-snap 완전 제거 - 부드러운 일반 스크롤 */
 }
 
 /* ============================================
@@ -229,8 +229,7 @@ body {
   padding: 4rem 3rem;
   display: flex;
   align-items: flex-start;
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
+  /* scroll-snap-align 제거 */
 }
 
 /* About 섹션만 중앙 정렬 */
@@ -477,6 +476,7 @@ body {
   transform: translateY(-8px);
   border-color: var(--theme-primary);
   box-shadow: 0 20px 40px rgba(16, 185, 129, 0.2);
+  will-change: transform;
 }
 
 .project-summary-card.featured {
@@ -764,6 +764,10 @@ body {
   font-weight: 500;
   border: 2px solid;
   transition: all 0.3s ease;
+}
+
+.skill-tag:hover {
+  transform: scale(1.05);
 }
 
 .skill-tag.expert {

@@ -921,55 +921,97 @@ body {
 }
 
 /* ============================================
- PDF PRINT STYLES - PC 크기로 고정!
- ============================================ */
+PDF PRINT STYLES - A4 최적화
+============================================ */
 
+@page{
+  size: A4 landscape;
+  margin: 12mm;
+}
 @media print {
+  /* 색상/크기 보정 */
   html, body {
-      width: 210mm !important;
-      height: auto !important;
-      margin: 0 !important;
-      padding: 0 !important;
+    width: 297mm !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  body{
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    overflow: visible !important;
   }
 
-  .side-nav {
-      display: none !important;
+  /* 인쇄 불필요 요소 숨김 */
+  .side-nav,
+  .theme-toggle,
+  .no-print{
+    display: none !important;
+  }
+  /* 스티키 해제만 하고 내용은 출력 */
+  .project-header{
+    position: static !important;
+    top: auto !important;
   }
 
-  .theme-toggle {
-      display: none !important;
+  /* 본문 영역 전체 폭 사용 */
+  .main-content{
+    margin-left: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
   }
 
-  .main-content {
-      margin-left: 0 !important;
-      width: 100% !important;
+  /* 섹션 단위로 페이지 분할 (마지막 예외) */
+  .section{
+    min-height: auto !important;
+    padding: 12mm 10mm !important;
+    break-after: page;
+    page-break-after: always;
+  }
+  .section:last-child{
+    break-after: auto;
+    page-break-after: auto;
   }
 
-  .section {
-      page-break-after: always;
-      min-height: 100vh;
-      padding: 2cm 1.5cm !important;
+  /* 잘림 방지: 작은 블록/미디어 위주로만 적용 */
+  .award-card,
+  .cert-card,
+  .edu-item,
+  .project-summary-card,
+  .contact-card,
+  figure, img, table, pre, blockquote{
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 
-  .section:last-child {
-      page-break-after: auto;
+  /* 이미지/다이어그램 크기 자동 맞춤 */
+  img, .diagram-image, video, canvas{
+    max-width: 100% !important;
+    height: auto !important;
   }
 
-  .project-detail {
-      page-break-after: always;
+  /* 링크 꼬리표 제거 */
+  a[href]::after{ content: "" !important; }
+
+  /* 장식 효과 제거로 대비 향상 */
+  *{
+    box-shadow: none !important;
+    text-shadow: none !important;
+    animation: none !important;
+    transition: none !important;
   }
 
+  /* 그리드 컬럼은 2열 유지 (A4에 최적) */
   .about-grid,
   .projects-overview,
   .skills-grid,
-  .contact-info-section {
-      grid-template-columns: repeat(2, 1fr) !important;
+  .contact-info-section{
+    grid-template-columns: repeat(2, 1fr) !important;
   }
 
-  @page {
-      size: A4;
-      margin: 1cm;
-  }
+  /* 명시적 강제 분할 유틸리티 */
+  .page-break{ break-before: page !important; page-break-before: always !important; }
 }
 
 /* ============================================
